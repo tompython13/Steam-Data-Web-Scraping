@@ -1,0 +1,28 @@
+from bs4 import BeautifulSoup
+from selenium import webdriver
+
+import pandas as pd
+
+driver = webdriver.Chrome('D:\chromedriver')
+driver.get("https://steamdb.info/")
+data = driver.page_source
+
+soup = BeautifulSoup(data, 'html.parser')
+column_names = []
+for big_title in soup.find_all('th', attrs={'class': 'table-title'}):
+    column_names.append(big_title.get_text())
+
+all_games = []
+trs = soup.find_all('tr', attrs={'class': 'app'})
+for tr in trs:
+    tds = tr.find_all("td")
+    all_games.append(tds[1].get_text().strip('\n'))
+
+d = {'Ranking': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+     f'{column_names[0]}': all_games[1:16],
+     f'{column_names[1]}': all_games[16:31],
+     f'{column_names[2]}': all_games[31:46],
+     f'{column_names[3]}': all_games[46:61],
+     }
+df = pd.DataFrame(data=d)
+df.to_csv('steam_data.csv', index=False)
